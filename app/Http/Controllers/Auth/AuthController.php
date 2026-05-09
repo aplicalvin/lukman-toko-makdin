@@ -29,7 +29,12 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials + ['role' => 'admin'], $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('admin.dashboard'));
+            
+            $intended = session()->pull('url.intended', route('admin.dashboard'));
+            if (str_contains($intended, '/employee')) {
+                $intended = route('admin.dashboard');
+            }
+            return redirect()->to($intended);
         }
 
         throw ValidationException::withMessages([
@@ -57,7 +62,12 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials + ['role' => 'employee'], $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('employee.dashboard'));
+
+            $intended = session()->pull('url.intended', route('employee.dashboard'));
+            if (str_contains($intended, '/admin')) {
+                $intended = route('employee.dashboard');
+            }
+            return redirect()->to($intended);
         }
 
         throw ValidationException::withMessages([

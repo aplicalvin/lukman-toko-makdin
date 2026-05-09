@@ -17,6 +17,7 @@ class DailyAttendance extends Model
         'status',
         'notes',
         'approval_status',
+        'attachment',
     ];
 
     protected $casts = [

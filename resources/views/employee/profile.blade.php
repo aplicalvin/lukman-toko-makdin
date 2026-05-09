@@ -56,17 +56,22 @@
 
         {{-- ── Stats row ── --}}
         <div class="px-4 -mt-8 mb-4 relative z-10">
+            @php
+                $hadirCount = \App\Models\DailyAttendance::where('employee_id', $employee->id)->where('status', 'Hadir')->count();
+                $izinCount = \App\Models\DailyAttendance::where('employee_id', $employee->id)->whereIn('status', ['Izin', 'Sakit', 'Cuti'])->count();
+                $alpaCount = \App\Models\DailyAttendance::where('employee_id', $employee->id)->where('status', 'Tidak Hadir')->count();
+            @endphp
             <div class="bg-white rounded-2xl shadow-md p-4 grid grid-cols-3 divide-x divide-slate-100">
                 <div class="text-center px-2">
-                    <p class="text-2xl font-extrabold text-[#1E2A5E]">22</p>
+                    <p class="text-2xl font-extrabold text-[#1E2A5E]">{{ $hadirCount }}</p>
                     <p class="text-xs text-slate-400 font-medium">Hadir</p>
                 </div>
                 <div class="text-center px-2">
-                    <p class="text-2xl font-extrabold text-[#1E2A5E]">2</p>
+                    <p class="text-2xl font-extrabold text-[#1E2A5E]">{{ $izinCount }}</p>
                     <p class="text-xs text-slate-400 font-medium">Izin</p>
                 </div>
                 <div class="text-center px-2">
-                    <p class="text-2xl font-extrabold text-[#1E2A5E]">0</p>
+                    <p class="text-2xl font-extrabold text-[#1E2A5E]">{{ $alpaCount }}</p>
                     <p class="text-xs text-slate-400 font-medium">Alpa</p>
                 </div>
             </div>
@@ -83,11 +88,11 @@
 
                 @php
                 $infos = [
-                    ['label' => 'Nama Lengkap', 'value' => auth()->user()->name ?? 'Budi Santoso', 'icon' => 'fa-user'],
+                    ['label' => 'Nama Lengkap', 'value' => auth()->user()->name, 'icon' => 'fa-user'],
                     ['label' => 'NIK / ID', 'value' => auth()->user()->noreg ?? 'KRY-001', 'icon' => 'fa-id-card'],
-                    ['label' => 'Departemen', 'value' => auth()->user()->department ?? 'Produksi', 'icon' => 'fa-building'],
-                    ['label' => 'Email', 'value' => auth()->user()->email ?? 'budi@makdin.co.id', 'icon' => 'fa-envelope'],
-                    ['label' => 'Bergabung', 'value' => '15 Jan 2023', 'icon' => 'fa-calendar'],
+                    ['label' => 'Bagian', 'value' => $employee->section ?? '-', 'icon' => 'fa-building'],
+                    ['label' => 'Email', 'value' => auth()->user()->email, 'icon' => 'fa-envelope'],
+                    ['label' => 'Bergabung', 'value' => $employee->join_date ? \Carbon\Carbon::parse($employee->join_date)->format('d M Y') : '-', 'icon' => 'fa-calendar'],
                 ];
                 @endphp
 
@@ -177,8 +182,23 @@
             </div>
         </div>
 
-        <div class="px-4 py-5 space-y-4 mb-28">
+        @if($errors->any())
+            <div class="px-4 mb-4">
+                <div class="bg-red-50 text-red-600 text-xs px-4 py-3 rounded-xl border border-red-100">
+                    {{ $errors->first() }}
+                </div>
+            </div>
+        @endif
+        @if(session('success'))
+            <div class="px-4 mb-4">
+                <div class="bg-emerald-50 text-emerald-600 text-xs px-4 py-3 rounded-xl border border-emerald-100">
+                    {{ session('success') }}
+                </div>
+            </div>
+        @endif
 
+        <form action="{{ route('employee.profile.password') }}" method="POST" class="px-4 py-5 space-y-4 mb-28">
+            @csrf
             {{-- Old password --}}
             <div class="bg-white rounded-2xl shadow-sm p-5 space-y-4">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Password Lama</label>
@@ -186,7 +206,7 @@
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                         <i class="fa-solid fa-lock w-4 text-sm"></i>
                     </span>
-                    <input :type="showPass[0] ? 'text' : 'password'" x-model="oldPass"
+                    <input :type="showPass[0] ? 'text' : 'password'" x-model="oldPass" name="current_password" required
                            placeholder="Password saat ini"
                            class="w-full pl-10 pr-12 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1E2A5E]/30 focus:border-[#1E2A5E]"/>
                     <button type="button" @click="showPass[0] = !showPass[0]"
@@ -206,7 +226,7 @@
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                             <i class="fa-solid fa-key w-4 text-sm"></i>
                         </span>
-                        <input :type="showPass[1] ? 'text' : 'password'" x-model="newPass"
+                        <input :type="showPass[1] ? 'text' : 'password'" x-model="newPass" name="new_password" required
                                @input="checkStrength($event.target.value)"
                                placeholder="Min. 8 karakter"
                                class="w-full pl-10 pr-12 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1E2A5E]/30 focus:border-[#1E2A5E]"/>
@@ -234,7 +254,7 @@
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                         <i class="fa-solid fa-shield-halved w-4 text-sm"></i>
                     </span>
-                    <input :type="showPass[2] ? 'text' : 'password'" x-model="confirmPass"
+                    <input :type="showPass[2] ? 'text' : 'password'" x-model="confirmPass" name="new_password_confirmation" required
                            placeholder="Ulangi password baru"
                            class="w-full pl-10 pr-12 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1E2A5E]/30 focus:border-[#1E2A5E]"
                            :class="confirmPass && newPass !== confirmPass ? 'border-red-400 bg-red-50' : confirmPass && newPass === confirmPass ? 'border-emerald-400' : ''"/>
@@ -254,13 +274,14 @@
             </div>
 
             {{-- Submit --}}
-            <button :disabled="!oldPass || !newPass || newPass !== confirmPass || strength < 2"
+            <button type="submit"
+                    :disabled="!oldPass || !newPass || newPass !== confirmPass || strength < 2"
                     :class="(!oldPass || !newPass || newPass !== confirmPass || strength < 2) ? 'opacity-40 cursor-not-allowed' : 'active:scale-95 shadow-lg shadow-blue-900/20'"
                     class="w-full py-4 rounded-full font-bold text-white text-base transition-all"
                     style="background: linear-gradient(135deg, #1E2A5E, #3B82F6);">
                 <i class="fa-solid fa-shield-check mr-2"></i>Update Password
             </button>
-        </div>
+        </form>
     </div>
 
     @include('employee._bottom-nav', ['active' => 'profile'])

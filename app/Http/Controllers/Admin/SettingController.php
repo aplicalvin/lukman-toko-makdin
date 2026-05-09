@@ -27,4 +27,33 @@ class SettingController extends Controller
 
         return back()->with('success', 'Pengaturan berhasil diperbarui.');
     }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . auth()->id(),
+        ]);
+
+        $user = auth()->user();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->save();
+
+        return back()->with('success', 'Informasi akun berhasil diperbarui.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|current_password',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = auth()->user();
+        $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
+        $user->save();
+
+        return back()->with('password_success', 'Password berhasil diperbarui.');
+    }
 }

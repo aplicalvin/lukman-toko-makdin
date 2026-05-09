@@ -16,10 +16,37 @@
         handleFile(e) {
             this.fileName = e.target.files[0]?.name ?? '';
         },
-        submit() {
+        async submit() {
             if (!this.type || !this.startDate || !this.reason) return;
             this.submitting = true;
-            setTimeout(() => { this.submitting = false; this.showConfirm = true; }, 1200);
+            
+            const formData = new FormData();
+            formData.append('type', this.type);
+            formData.append('start_date', this.startDate);
+            formData.append('end_date', this.endDate || this.startDate);
+            formData.append('reason', this.reason);
+            const fileInput = document.getElementById('attachment');
+            if (fileInput.files.length > 0) {
+                formData.append('attachment', fileInput.files[0]);
+            }
+            formData.append('_token', '{{ csrf_token() }}');
+
+            try {
+                const res = await fetch('{{ route("employee.izin.store") }}', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                this.submitting = false;
+                if (data.success) {
+                    this.showConfirm = true;
+                } else {
+                    alert(data.message || 'Terjadi kesalahan.');
+                }
+            } catch (err) {
+                this.submitting = false;
+                alert('Terjadi kesalahan sistem.');
+            }
         }
      }">
 
@@ -112,7 +139,7 @@
                     <p class="text-xs text-slate-400">PDF, JPG, PNG maks. 5MB</p>
                 </div>
                 <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
-                <input type="file" class="hidden" @change="handleFile($event)" accept=".pdf,.jpg,.jpeg,.png"/>
+                <input type="file" id="attachment" class="hidden" @change="handleFile($event)" accept=".pdf,.jpg,.jpeg,.png"/>
             </label>
         </div>
 
@@ -131,37 +158,40 @@
          TAB: HISTORY
     ════════════════════════════════════════ --}}
     <div x-show="tab === 'history'" x-transition.opacity class="px-4 py-5 mb-28 space-y-3">
-        @php
-        $histories = [
-            ['type'=>'Izin','start'=>'2026-04-15','end'=>'2026-04-15','reason'=>'Keperluan keluarga','status'=>'Disetujui','color'=>'bg-emerald-100 text-emerald-700','icon'=>'fa-circle-check','iconColor'=>'text-emerald-500'],
-            ['type'=>'Sakit','start'=>'2026-04-10','end'=>'2026-04-11','reason'=>'Demam dan flu berat','status'=>'Disetujui','color'=>'bg-emerald-100 text-emerald-700','icon'=>'fa-circle-check','iconColor'=>'text-emerald-500'],
-            ['type'=>'Cuti','start'=>'2026-05-01','end'=>'2026-05-03','reason'=>'Liburan keluarga','status'=>'Menunggu','color'=>'bg-amber-100 text-amber-700','icon'=>'fa-clock','iconColor'=>'text-amber-500'],
-            ['type'=>'Izin','start'=>'2026-03-22','end'=>'2026-03-22','reason'=>'Urusan administrasi','status'=>'Ditolak','color'=>'bg-red-100 text-red-700','icon'=>'fa-circle-xmark','iconColor'=>'text-red-500'],
-        ];
-        @endphp
+        @if($histories->isEmpty())
+            <div class="bg-white rounded-2xl shadow-sm p-8 text-center text-slate-400 text-sm">
+                Belum ada riwayat pengajuan.
+            </div>
+        @endif
 
         @foreach($histories as $h)
+        @php
+            $icon = 'fa-file-lines';
+            $color = 'bg-blue-100 text-blue-600';
+            if($h->status === 'Sakit') { $icon = 'fa-kit-medical'; $color = 'bg-red-100 text-red-600'; }
+            elseif($h->status === 'Cuti') { $icon = 'fa-umbrella-beach'; $color = 'bg-green-100 text-green-600'; }
+
+            $statusColor = 'bg-amber-100 text-amber-700';
+            $statusIcon = 'fa-clock';
+            if($h->approval_status === 'Done') { $statusColor = 'bg-emerald-100 text-emerald-700'; $statusIcon = 'fa-circle-check'; }
+            elseif($h->approval_status === 'Decline') { $statusColor = 'bg-red-100 text-red-700'; $statusIcon = 'fa-circle-xmark'; }
+        @endphp
         <div class="bg-white rounded-2xl shadow-sm p-4">
             <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
-                            @if($h['type']==='Izin') bg-blue-100 text-blue-600
-                            @elseif($h['type']==='Sakit') bg-red-100 text-red-600
-                            @else bg-green-100 text-green-600 @endif">
-                    <i class="fa-solid @if($h['type']==='Izin') fa-file-lines @elseif($h['type']==='Sakit') fa-kit-medical @else fa-umbrella-beach @endif text-sm"></i>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 {{ $color }}">
+                    <i class="fa-solid {{ $icon }} text-sm"></i>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-2">
-                        <p class="text-sm font-bold text-slate-800">{{ $h['type'] }}</p>
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-full {{ $h['color'] }}">
-                            <i class="fa-solid {{ $h['icon'] }} mr-1 text-[10px]"></i>{{ $h['status'] }}
+                        <p class="text-sm font-bold text-slate-800">{{ $h->status }}</p>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full {{ $statusColor }}">
+                            <i class="fa-solid {{ $statusIcon }} mr-1 text-[10px]"></i>{{ $h->approval_status }}
                         </span>
                     </div>
                     <p class="text-xs text-slate-400 mt-0.5">
-                        {{ \Carbon\Carbon::parse($h['start'])->format('d M') }}
-                        @if($h['start'] !== $h['end']) – {{ \Carbon\Carbon::parse($h['end'])->format('d M Y') }}
-                        @else {{ \Carbon\Carbon::parse($h['start'])->format('Y') }} @endif
+                        {{ \Carbon\Carbon::parse($h->date)->format('d M Y') }}
                     </p>
-                    <p class="text-xs text-slate-500 mt-1.5 truncate">{{ $h['reason'] }}</p>
+                    <p class="text-xs text-slate-500 mt-1.5 truncate">{{ $h->notes }}</p>
                 </div>
             </div>
         </div>

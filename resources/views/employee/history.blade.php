@@ -3,6 +3,32 @@
 @section('title', 'Riwayat')
 
 @section('content')
+@php
+    $absensiMapped = $histories->filter(fn($h) => !in_array($h->status, ['Izin', 'Sakit', 'Cuti']))->map(function($h) {
+        return [
+            'id' => $h->id,
+            'date' => \Carbon\Carbon::parse($h->date)->format('Y-m-d'),
+            'day' => \Carbon\Carbon::parse($h->date)->translatedFormat('l'),
+            'clockIn' => $h->check_in_time ? \Carbon\Carbon::parse($h->check_in_time)->format('H:i') : null,
+            'clockOut' => $h->check_out_time ? \Carbon\Carbon::parse($h->check_out_time)->format('H:i') : null,
+            'duration' => $h->total_hours ? $h->total_hours . 'j' : '-',
+            'status' => $h->status ?? 'Alpa',
+            'lateMin' => 0
+        ];
+    })->values();
+
+    $pengajuanMapped = $histories->filter(fn($h) => in_array($h->status, ['Izin', 'Sakit', 'Cuti']))->map(function($h) {
+        return [
+            'id' => $h->id,
+            'type' => $h->status,
+            'startDate' => \Carbon\Carbon::parse($h->date)->format('Y-m-d'),
+            'endDate' => \Carbon\Carbon::parse($h->date)->format('Y-m-d'),
+            'days' => 1,
+            'reason' => $h->notes ?? '-',
+            'status' => $h->approval_status === 'Done' ? 'Disetujui' : ($h->approval_status === 'Decline' ? 'Ditolak' : 'Menunggu')
+        ];
+    })->values();
+@endphp
 <div class="min-h-screen bg-[#F0F4F8] pb-24"
      x-data="{
         tab: 'absensi',
@@ -11,22 +37,9 @@
         dateTo: '',
         showFilter: false,
 
-        absensiData: [
-            { id:1, date:'2026-05-07', day:'Rabu',   clockIn:'07:02', clockOut:'16:15', duration:'9j 13m', status:'Hadir',     lateMin:0  },
-            { id:2, date:'2026-05-06', day:'Selasa', clockIn:'07:45', clockOut:'16:10', duration:'8j 25m', status:'Terlambat', lateMin:45 },
-            { id:3, date:'2026-05-05', day:'Senin',  clockIn:'07:00', clockOut:'14:30', duration:'7j 30m', status:'Pulang Cepat', lateMin:0 },
-            { id:4, date:'2026-05-02', day:'Jumat',  clockIn:'07:05', clockOut:'16:05', duration:'9j 0m',  status:'Hadir',     lateMin:0  },
-            { id:5, date:'2026-05-01', day:'Kamis',  clockIn:null,    clockOut:null,    duration:'-',       status:'Libur',     lateMin:0  },
-            { id:6, date:'2026-04-30', day:'Rabu',   clockIn:'08:30', clockOut:'16:00', duration:'7j 30m', status:'Terlambat', lateMin:90 },
-            { id:7, date:'2026-04-29', day:'Selasa', clockIn:null,    clockOut:null,    duration:'-',       status:'Alpa',      lateMin:0  },
-        ],
+        absensiData: @json($absensiMapped),
 
-        pengajuanData: [
-            { id:1, type:'Izin',  startDate:'2026-04-15', endDate:'2026-04-15', days:1, reason:'Keperluan keluarga',  status:'Disetujui' },
-            { id:2, type:'Sakit', startDate:'2026-04-10', endDate:'2026-04-11', days:2, reason:'Demam dan flu berat', status:'Disetujui' },
-            { id:3, type:'Cuti',  startDate:'2026-05-01', endDate:'2026-05-03', days:3, reason:'Liburan keluarga',    status:'Menunggu'  },
-            { id:4, type:'Izin',  startDate:'2026-03-22', endDate:'2026-03-22', days:1, reason:'Urusan administrasi', status:'Ditolak'   },
-        ],
+        pengajuanData: @json($pengajuanMapped),
 
         get filteredAbsensi() {
             return this.absensiData.filter(r => {
@@ -90,19 +103,19 @@
         {{-- Month summary pills --}}
         <div class="relative flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             <div class="flex-shrink-0 bg-white/15 border border-white/20 rounded-xl px-3 py-2 text-center min-w-[80px]">
-                <p class="text-white text-lg font-extrabold">22</p>
+                <p class="text-white text-lg font-extrabold">{{ $histories->where('status', 'Hadir')->count() }}</p>
                 <p class="text-blue-200 text-[10px] font-semibold">Hadir</p>
             </div>
             <div class="flex-shrink-0 bg-white/15 border border-white/20 rounded-xl px-3 py-2 text-center min-w-[80px]">
-                <p class="text-amber-300 text-lg font-extrabold">3</p>
+                <p class="text-amber-300 text-lg font-extrabold">{{ $histories->where('status', 'Terlambat')->count() }}</p>
                 <p class="text-blue-200 text-[10px] font-semibold">Terlambat</p>
             </div>
             <div class="flex-shrink-0 bg-white/15 border border-white/20 rounded-xl px-3 py-2 text-center min-w-[80px]">
-                <p class="text-red-300 text-lg font-extrabold">1</p>
+                <p class="text-red-300 text-lg font-extrabold">{{ $histories->where('status', 'Tidak Hadir')->count() }}</p>
                 <p class="text-blue-200 text-[10px] font-semibold">Alpa</p>
             </div>
             <div class="flex-shrink-0 bg-white/15 border border-white/20 rounded-xl px-3 py-2 text-center min-w-[80px]">
-                <p class="text-emerald-300 text-lg font-extrabold">2</p>
+                <p class="text-emerald-300 text-lg font-extrabold">{{ $histories->whereIn('status', ['Izin', 'Cuti', 'Sakit'])->count() }}</p>
                 <p class="text-blue-200 text-[10px] font-semibold">Izin/Cuti</p>
             </div>
         </div>

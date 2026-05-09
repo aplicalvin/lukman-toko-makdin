@@ -298,20 +298,26 @@
 
     function generateQr() {
         const container = document.getElementById('qr-container');
-        if (!qrCodeInstance) {
-            container.innerHTML = '';
-            qrCodeInstance = new QRCode(container, {
-                text: ABSENSI_URL + '?t=' + Date.now(),
-                width: 230,
-                height: 230,
-                colorDark : "#1e293b",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        } else {
-            qrCodeInstance.clear();
-            qrCodeInstance.makeCode(ABSENSI_URL + '?t=' + Date.now());
-        }
+        
+        fetch('{{ route("admin.generate-token") }}')
+            .then(r => r.json())
+            .then(data => {
+                if (!qrCodeInstance) {
+                    container.innerHTML = '';
+                    qrCodeInstance = new QRCode(container, {
+                        text: data.token,
+                        width: 230,
+                        height: 230,
+                        colorDark : "#1e293b",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                } else {
+                    qrCodeInstance.clear();
+                    qrCodeInstance.makeCode(data.token);
+                }
+            })
+            .catch(e => console.error('Error generating token:', e));
     }
 
     window.refreshQr = function () {

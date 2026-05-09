@@ -135,4 +135,24 @@ class DashboardController extends Controller
 
         return response()->json($data);
     }
+
+    public function generateToken()
+    {
+        // Clean up expired tokens
+        \App\Models\QrToken::where('expires_at', '<', now())->delete();
+
+        $token = \Illuminate\Support\Str::random(32);
+        $expiresAt = now()->addSeconds(30); // Valid for 30 seconds
+
+        \App\Models\QrToken::create([
+            'token' => $token,
+            'expires_at' => $expiresAt,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'token' => $token,
+            'expires_at' => $expiresAt->toIso8601String(),
+        ]);
+    }
 }

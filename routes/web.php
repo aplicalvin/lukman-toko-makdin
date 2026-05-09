@@ -10,13 +10,19 @@ use App\Http\Controllers\Admin\DailySalaryController;
 use App\Http\Controllers\Admin\MonthlySalaryController;
 use App\Http\Controllers\Auth\AuthController;
 
+// Employee Controllers
+use App\Http\Controllers\Employee\EmployeeDashboardController;
+use App\Http\Controllers\Employee\AttendanceActionController;
+use App\Http\Controllers\Employee\PermitController;
+use App\Http\Controllers\Employee\ProfileController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', fn() => redirect()->route('admin.dashboard'));
+Route::get('/', fn() => view('welcome'))->name('home');
 
 // Base login route for middleware redirection
 Route::get('/login', fn() => redirect()->route('admin.login'))->name('login');
@@ -43,6 +49,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/dashboard/data', [DashboardController::class, 'todayAttendanceData'])->name('dashboard.data');
     Route::get('/halaman-absensi', [DashboardController::class, 'halamanAbsensi'])->name('halaman-absensi');
     Route::get('/halaman-absensi/data', [DashboardController::class, 'halamanAbsensiData'])->name('halaman-absensi.data');
+    Route::get('/generate-token', [DashboardController::class, 'generateToken'])->name('generate-token');
 
     // --- Attendance (Presensi) ---
     Route::get('/rekap-presensi', [AttendanceController::class, 'index'])->name('rekap-presensi');
@@ -54,6 +61,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     // --- Settings ---
     Route::get('/pengaturan', [SettingController::class, 'index'])->name('pengaturan');
     Route::post('/pengaturan', [SettingController::class, 'update'])->name('pengaturan.update');
+    Route::put('/profile', [SettingController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/password', [SettingController::class, 'updatePassword'])->name('password.update');
 
     // --- Salary Recaps ---
     Route::get('/rekap-gaji-harian', [DailySalaryController::class, 'index'])->name('rekap-gaji-harian');
@@ -78,10 +87,19 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
 // ── Employee (Karyawan) Routes ──────────────────────────────────────────────
 Route::prefix('employee')->name('employee.')->middleware(['auth', 'role:employee'])->group(function () {
-    Route::get('/dashboard', fn() => view('employee.dashboard'))->name('dashboard');
-    Route::get('/scan', fn() => view('employee.scan'))->name('scan');
-    Route::get('/izin', fn() => view('employee.izin'))->name('izin');
-    Route::get('/profile', fn() => view('employee.profile'))->name('profile');
-    Route::get('/rekap', fn() => view('employee.dashboard'))->name('rekap'); // placeholder
-    Route::get('/history', fn() => view('employee.history'))->name('history');
+    Route::get('/dashboard', [EmployeeDashboardController::class, 'dashboard'])->name('dashboard');
+    
+    // Scan Attendance
+    Route::get('/scan', [AttendanceActionController::class, 'scan'])->name('scan');
+    Route::post('/scan', [AttendanceActionController::class, 'processScan'])->name('scan.process');
+    Route::get('/history', [AttendanceActionController::class, 'history'])->name('history');
+    Route::get('/rekap', fn() => redirect()->route('employee.history'))->name('rekap'); // redirect rekap to history
+    
+    // Permits / Leave
+    Route::get('/izin', [PermitController::class, 'index'])->name('izin');
+    Route::post('/izin', [PermitController::class, 'store'])->name('izin.store');
+    
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });

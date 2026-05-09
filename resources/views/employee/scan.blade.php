@@ -3,15 +3,12 @@
 @section('title', 'Scan Absensi')
 
 @section('content')
+<!-- Include HTML5-QRCode library -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 <div class="relative min-h-screen flex flex-col"
-     x-data="{
-        showSuccess: false,
-        showFail: false,
-        simulateScan(result) {
-            if (result === 'ok') { this.showSuccess = true; }
-            else { this.showFail = true; }
-        }
-     }">
+     x-data="scannerComponent"
+     x-init="startScanner()">
 
     {{-- ══════════════════════════════════════
          DARK CAMERA OVERLAY
@@ -38,39 +35,37 @@
     <div class="relative z-10 flex items-center justify-center flex-1">
         <div class="relative w-64 h-64">
 
+            {{-- Camera container --}}
+            <div id="reader" class="absolute inset-0 rounded-2xl overflow-hidden [&_video]:object-cover [&_video]:w-full [&_video]:h-full border-0"></div>
+
             {{-- Dark vignette sides --}}
             {{-- Scan area border --}}
-            <div class="absolute inset-0 rounded-2xl border-2 border-white/20"></div>
+            <div class="absolute inset-0 rounded-2xl border-2 border-white/40 pointer-events-none z-10"></div>
 
             {{-- Animated scan line --}}
-            <div class="absolute left-2 right-2 h-0.5 rounded-full scan-line"
+            <div class="absolute left-2 right-2 h-0.5 rounded-full scan-line z-20"
                  style="background: linear-gradient(90deg, transparent, #38BDF8, #818CF8, #38BDF8, transparent);"></div>
 
             {{-- Corner brackets (cyan) --}}
             {{-- Top-left --}}
-            <div class="corner-pulse absolute top-0 left-0 w-8 h-8">
+            <div class="corner-pulse absolute top-0 left-0 w-8 h-8 z-20">
                 <div class="absolute top-0 left-0 w-8 h-1 rounded-tl-md bg-cyan-400"></div>
                 <div class="absolute top-0 left-0 w-1 h-8 rounded-tl-md bg-cyan-400"></div>
             </div>
             {{-- Top-right --}}
-            <div class="corner-pulse absolute top-0 right-0 w-8 h-8">
+            <div class="corner-pulse absolute top-0 right-0 w-8 h-8 z-20">
                 <div class="absolute top-0 right-0 w-8 h-1 rounded-tr-md bg-cyan-400"></div>
                 <div class="absolute top-0 right-0 w-1 h-8 rounded-tr-md bg-cyan-400"></div>
             </div>
             {{-- Bottom-left --}}
-            <div class="corner-pulse absolute bottom-0 left-0 w-8 h-8">
+            <div class="corner-pulse absolute bottom-0 left-0 w-8 h-8 z-20">
                 <div class="absolute bottom-0 left-0 w-8 h-1 rounded-bl-md bg-cyan-400"></div>
                 <div class="absolute bottom-0 left-0 w-1 h-8 rounded-bl-md bg-cyan-400"></div>
             </div>
             {{-- Bottom-right --}}
-            <div class="corner-pulse absolute bottom-0 right-0 w-8 h-8">
+            <div class="corner-pulse absolute bottom-0 right-0 w-8 h-8 z-20">
                 <div class="absolute bottom-0 right-0 w-8 h-1 rounded-br-md bg-cyan-400"></div>
                 <div class="absolute bottom-0 right-0 w-1 h-8 rounded-br-md bg-cyan-400"></div>
-            </div>
-
-            {{-- Center QR icon (placeholder) --}}
-            <div class="absolute inset-0 flex items-center justify-center">
-                <i class="fa-solid fa-qrcode text-white/10 text-6xl"></i>
             </div>
         </div>
     </div>
@@ -82,17 +77,7 @@
             Pastikan QR Code berada dalam kotak pemindai
         </p>
 
-        {{-- Demo simulation buttons --}}
-        <div class="flex gap-3">
-            <button @click="simulateScan('ok')"
-                    class="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-all border border-white/20">
-                <i class="fa-solid fa-check mr-1 text-emerald-400"></i> Simulasi Berhasil
-            </button>
-            <button @click="simulateScan('fail')"
-                    class="flex-1 py-3 rounded-xl font-semibold text-sm text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-all border border-white/20">
-                <i class="fa-solid fa-x mr-1 text-red-400"></i> Simulasi Gagal
-            </button>
-        </div>
+
 
         <a href="{{ route('employee.dashboard') }}"
            class="block w-full py-3.5 rounded-full text-sm font-semibold text-white/80 border border-white/20 hover:bg-white/10 active:scale-95 transition-all">
@@ -119,9 +104,9 @@
                 </div>
             </div>
 
-            <h2 class="text-xl font-extrabold text-slate-800 mb-1">Presensi Berhasil!</h2>
-            <p class="text-sm text-slate-400 mb-1">Clock In tercatat</p>
-            <p class="text-2xl font-bold text-[#1E2A5E] mb-6">{{ \Carbon\Carbon::now()->format('H:i') }} WIB</p>
+            <h2 class="text-xl font-extrabold text-slate-800 mb-1" x-text="scanMessage || 'Presensi Berhasil!'"></h2>
+            <p class="text-sm text-slate-400 mb-1">Tercatat</p>
+            <p class="text-2xl font-bold text-[#1E2A5E] mb-6"><span x-text="scanTime"></span> WIB</p>
 
             <div class="bg-slate-50 rounded-xl p-3 mb-6 text-left space-y-2">
                 <div class="flex justify-between text-xs">
@@ -133,8 +118,8 @@
                     <span class="font-semibold text-slate-700">{{ \Carbon\Carbon::now()->format('d M Y') }}</span>
                 </div>
                 <div class="flex justify-between text-xs">
-                    <span class="text-slate-400">Status</span>
-                    <span class="font-semibold text-emerald-600">Tepat Waktu</span>
+                    <span class="text-slate-400">Tipe</span>
+                    <span class="font-semibold text-emerald-600" x-text="scanType"></span>
                 </div>
             </div>
 
@@ -185,3 +170,68 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('scannerComponent', () => ({
+        showSuccess: false,
+        showFail: false,
+        scanMessage: '',
+        scanTime: '',
+        scanType: '',
+        
+        async processScan(result) {
+            try {
+                const res = await fetch('{{ route("employee.scan.process") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ token: result })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    this.scanMessage = data.message;
+                    this.scanTime = data.time;
+                    this.scanType = data.type;
+                    this.showSuccess = true;
+                } else {
+                    this.showFail = true;
+                }
+            } catch (err) {
+                console.error(err);
+                this.showFail = true;
+            }
+        },
+        
+        startScanner() {
+            const readerElement = document.getElementById("reader");
+            if (!readerElement) {
+                console.error("Scanner element #reader not found in DOM");
+                return;
+            }
+
+            const html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            html5QrCode.start({ facingMode: "environment" }, config, (decodedText, decodedResult) => {
+                html5QrCode.stop().then(() => {
+                    this.processScan(decodedText);
+                }).catch(err => {
+                    console.error("Error stopping scanner:", err);
+                    this.processScan(decodedText);
+                });
+            }, (errorMessage) => {
+                // parse error, ignore it.
+            }).catch((err) => {
+                console.error("Camera access or init error:", err);
+            });
+        }
+    }));
+});
+</script>
+@endpush

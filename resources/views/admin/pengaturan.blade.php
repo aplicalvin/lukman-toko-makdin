@@ -25,45 +25,32 @@
                 </div>
             </div>
             <div class="p-6">
-                {{-- Avatar --}}
-                <div class="flex items-center gap-4 mb-6">
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold">
-                        A
+                @if(session('success'))
+                    <div class="mb-4 bg-emerald-50 text-emerald-600 text-sm px-4 py-3 rounded-xl border border-emerald-100">
+                        {{ session('success') }}
                     </div>
-                    <div>
-                        <p class="text-sm font-semibold text-slate-800">Foto Profil</p>
-                        <p class="text-xs text-slate-500 mb-2">JPG, PNG maks. 2MB</p>
-                        <label
-                            class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
-                            Unggah Foto
-                            <input type="file" class="hidden" accept="image/*" />
-                        </label>
+                @endif
+                @if($errors->any())
+                    <div class="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-100">
+                        {{ $errors->first() }}
                     </div>
-                </div>
+                @endif
 
-                <form class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <form action="{{ route('admin.profile.update') }}" method="POST" class="space-y-4">
+                    @csrf
+                    @method('PUT')
+                    <div class="grid grid-cols-1 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Lengkap <span
                                     class="text-red-500">*</span></label>
-                            <input type="text" value="Administrator"
+                            <input type="text" name="name" value="{{ old('name', auth()->user()->name) }}" required
                                 class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Username</label>
-                            <input type="text" value="admin"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
-                        </div>
-                        <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-slate-700 mb-1.5">Email <span
                                     class="text-red-500">*</span></label>
                             <div class="relative">
-                                <input type="email" value="admin@makdin.co.id"
+                                <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}" required
                                     class="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                                 <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
@@ -74,7 +61,7 @@
                         </div>
                     </div>
                     <div class="flex justify-end pt-2">
-                        <button type="button"
+                        <button type="submit"
                             class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors">
                             Simpan Perubahan
                         </button>
@@ -98,12 +85,25 @@
                 </div>
             </div>
             <div class="p-6">
-                <form class="space-y-4">
+                @if(session('password_success'))
+                    <div class="mb-4 bg-emerald-50 text-emerald-600 text-sm px-4 py-3 rounded-xl border border-emerald-100">
+                        {{ session('password_success') }}
+                    </div>
+                @endif
+                @if($errors->has('current_password') || $errors->has('password') || $errors->has('password_confirmation'))
+                    <div class="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl border border-red-100">
+                        Pastikan semua kolom password diisi dengan benar. ({{ $errors->first() }})
+                    </div>
+                @endif
+
+                <form action="{{ route('admin.password.update') }}" method="POST" class="space-y-4">
+                    @csrf
+                    @method('PUT')
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">Password Saat Ini <span
                                 class="text-red-500">*</span></label>
                         <div class="relative">
-                            <input type="password" id="pwd-current" placeholder="••••••••"
+                            <input type="password" name="current_password" id="pwd-current" placeholder="••••••••" required
                                 class="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                             <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
@@ -126,7 +126,7 @@
                             <label class="block text-sm font-medium text-slate-700 mb-1.5">Password Baru <span
                                     class="text-red-500">*</span></label>
                             <div class="relative">
-                                <input type="password" id="pwd-new" placeholder="Min. 8 karakter"
+                                <input type="password" name="password" id="pwd-new" placeholder="Min. 8 karakter" required
                                     class="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     oninput="checkStrength(this.value)" />
                                 <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
@@ -161,7 +161,7 @@
                             <label class="block text-sm font-medium text-slate-700 mb-1.5">Konfirmasi Password <span
                                     class="text-red-500">*</span></label>
                             <div class="relative">
-                                <input type="password" id="pwd-confirm" placeholder="Ulangi password baru"
+                                <input type="password" name="password_confirmation" id="pwd-confirm" placeholder="Ulangi password baru" required
                                     class="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                                 <svg class="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
@@ -183,61 +183,13 @@
                         </div>
                     </div>
                     <div class="flex justify-end pt-2">
-                        <button type="button"
+                        <button type="submit"
                             class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-xl transition-colors">
                             Perbarui Password
                         </button>
                     </div>
                 </form>
             </div>
-        {{-- ── SECTION: Pengaturan Sistem ── --}}
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-                <div class="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-sm font-semibold text-slate-800">Pengaturan Sistem</h2>
-                    <p class="text-xs text-slate-500">Konfigurasi parameter operasional aplikasi.</p>
-                </div>
-            </div>
-            <div class="p-6">
-                <form action="{{ route('admin.pengaturan.update') }}" method="POST" class="space-y-4">
-                    @csrf
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Perusahaan</label>
-                            <input type="text" name="company_name" value="{{ $settings['company_name'] ?? 'Makdin' }}"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Threshold Keterlambatan (Menit)</label>
-                            <input type="number" name="late_threshold" value="{{ $settings['late_threshold'] ?? '15' }}"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Jam Masuk</label>
-                            <input type="time" name="work_start" value="{{ $settings['work_start'] ?? '08:00' }}"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Jam Pulang</label>
-                            <input type="time" name="work_end" value="{{ $settings['work_end'] ?? '17:00' }}"
-                                class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
-                        </div>
-                    </div>
-                    <div class="flex justify-end pt-2">
-                        <button type="submit"
-                            class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-colors">
-                            Simpan Pengaturan Sistem
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 @endsection
 
