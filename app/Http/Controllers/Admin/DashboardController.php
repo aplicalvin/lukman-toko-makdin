@@ -141,7 +141,7 @@ class DashboardController extends Controller
         // Clean up expired tokens
         \App\Models\QrToken::where('expires_at', '<', now())->delete();
 
-        $token = \Illuminate\Support\Str::random(32);
+        $token = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
         $expiresAt = now()->addSeconds(30); // Valid for 30 seconds
 
         \App\Models\QrToken::create([

@@ -91,7 +91,7 @@ Route::prefix('employee')->name('employee.')->middleware(['auth', 'role:employee
     
     // Scan Attendance
     Route::get('/scan', [AttendanceActionController::class, 'scan'])->name('scan');
-    Route::post('/scan', [AttendanceActionController::class, 'processScan'])->name('scan.process');
+    Route::post('/verify-otp', [AttendanceActionController::class, 'verifyOtp'])->name('verify-otp');
     Route::get('/history', [AttendanceActionController::class, 'history'])->name('history');
     Route::get('/rekap', fn() => redirect()->route('employee.history'))->name('rekap'); // redirect rekap to history
     

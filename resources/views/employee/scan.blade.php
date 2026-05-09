@@ -1,86 +1,67 @@
 {{-- resources/views/employee/scan.blade.php --}}
 @extends('layouts.employee')
-@section('title', 'Scan Absensi')
+@section('title', 'Input OTP Absensi')
 
 @section('content')
-<!-- Include HTML5-QRCode library -->
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<div class="relative min-h-screen flex flex-col bg-white"
+     x-data="otpComponent"
+     x-init="init()">
 
-<div class="relative min-h-screen flex flex-col"
-     x-data="scannerComponent"
-     x-init="startScanner()">
-
-    {{-- ══════════════════════════════════════
-         DARK CAMERA OVERLAY
-    ════════════════════════════════════════ --}}
-    <div class="absolute inset-0 bg-black/85 z-0"></div>
-
-    {{-- Top bar --}}
-    <div class="relative z-10 flex items-center justify-between px-5 pt-12 pb-4">
-        <a href="{{ route('employee.dashboard') }}" class="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center">
-            <i class="fa-solid fa-chevron-left text-white"></i>
+    {{-- Header --}}
+    <div class="relative z-10 px-6 pt-12 pb-6 flex items-center justify-between">
+        <a href="{{ route('employee.dashboard') }}" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+            <i class="fa-solid fa-chevron-left"></i>
         </a>
-        <h1 class="text-white font-bold text-base">Scan Absensi</h1>
-        <button class="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center">
-            <i class="fa-solid fa-lightbulb text-white"></i>
-        </button>
+        <h1 class="text-slate-800 font-bold text-lg">Input OTP Absensi</h1>
+        <div class="w-10 h-10"></div> {{-- Spacer --}}
     </div>
 
-    {{-- Instruction text --}}
-    <div class="relative z-10 text-center px-6 pt-2 pb-5">
-        <p class="text-white/70 text-sm">Arahkan kamera ke QR Code absensi</p>
-    </div>
-
-    {{-- ── QR SCAN FRAME ── --}}
-    <div class="relative z-10 flex items-center justify-center flex-1">
-        <div class="relative w-64 h-64">
-
-            {{-- Camera container --}}
-            <div id="reader" class="absolute inset-0 rounded-2xl overflow-hidden [&_video]:object-cover [&_video]:w-full [&_video]:h-full border-0"></div>
-
-            {{-- Dark vignette sides --}}
-            {{-- Scan area border --}}
-            <div class="absolute inset-0 rounded-2xl border-2 border-white/40 pointer-events-none z-10"></div>
-
-            {{-- Animated scan line --}}
-            <div class="absolute left-2 right-2 h-0.5 rounded-full scan-line z-20"
-                 style="background: linear-gradient(90deg, transparent, #38BDF8, #818CF8, #38BDF8, transparent);"></div>
-
-            {{-- Corner brackets (cyan) --}}
-            {{-- Top-left --}}
-            <div class="corner-pulse absolute top-0 left-0 w-8 h-8 z-20">
-                <div class="absolute top-0 left-0 w-8 h-1 rounded-tl-md bg-cyan-400"></div>
-                <div class="absolute top-0 left-0 w-1 h-8 rounded-tl-md bg-cyan-400"></div>
-            </div>
-            {{-- Top-right --}}
-            <div class="corner-pulse absolute top-0 right-0 w-8 h-8 z-20">
-                <div class="absolute top-0 right-0 w-8 h-1 rounded-tr-md bg-cyan-400"></div>
-                <div class="absolute top-0 right-0 w-1 h-8 rounded-tr-md bg-cyan-400"></div>
-            </div>
-            {{-- Bottom-left --}}
-            <div class="corner-pulse absolute bottom-0 left-0 w-8 h-8 z-20">
-                <div class="absolute bottom-0 left-0 w-8 h-1 rounded-bl-md bg-cyan-400"></div>
-                <div class="absolute bottom-0 left-0 w-1 h-8 rounded-bl-md bg-cyan-400"></div>
-            </div>
-            {{-- Bottom-right --}}
-            <div class="corner-pulse absolute bottom-0 right-0 w-8 h-8 z-20">
-                <div class="absolute bottom-0 right-0 w-8 h-1 rounded-br-md bg-cyan-400"></div>
-                <div class="absolute bottom-0 right-0 w-1 h-8 rounded-br-md bg-cyan-400"></div>
-            </div>
+    {{-- Main Content --}}
+    <div class="relative z-10 flex flex-col items-center justify-center flex-1 px-6">
+        
+        {{-- Icon --}}
+        <div class="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center mb-6">
+            <i class="fa-solid fa-key text-[#035EA1] text-3xl"></i>
         </div>
-    </div>
 
-    {{-- Info + demo buttons --}}
-    <div class="relative z-10 px-6 pb-10 text-center space-y-4">
-        <p class="text-white/60 text-xs">
-            <i class="fa-solid fa-circle-info mr-1"></i>
-            Pastikan QR Code berada dalam kotak pemindai
-        </p>
+        {{-- Instructions --}}
+        <div class="text-center mb-8">
+            <h2 class="text-xl font-bold text-slate-800 mb-2">Masukkan 4-Digit Kode</h2>
+            <p class="text-sm text-slate-500">Masukkan kode yang ditampilkan di dashboard admin</p>
+        </div>
 
+        {{-- OTP Input --}}
+        <div class="flex gap-4 mb-8">
+            <template x-for="(digit, index) in otp" :key="index">
+                <input type="text" 
+                       maxlength="1" 
+                       x-model="otp[index]"
+                       @input="handleInput($event, index)"
+                       @keydown.backspace="handleBackspace($event, index)"
+                       class="w-14 h-14 border-2 rounded-xl text-center text-2xl font-bold text-slate-800 focus:outline-none focus:border-[#035EA1] focus:ring-2 focus:ring-blue-100 transition-all"
+                       :class="otp[index] ? 'border-[#035EA1] bg-blue-50/50' : 'border-slate-200 bg-slate-50'"
+                       :id="'otp-' + index"
+                       inputmode="numeric"
+                       pattern="[0-9]*">
+            </template>
+        </div>
 
+        {{-- Submit Button (Manual fallback or status) --}}
+        <button @click="submitOTP" 
+                :disabled="isSubmitting || otp.join('').length < 4"
+                class="w-full max-w-xs py-4 rounded-full font-bold text-white text-sm active:scale-95 transition-all flex items-center justify-center gap-2"
+                :class="otp.join('').length === 4 && !isSubmitting ? 'bg-[#035EA1] hover:bg-[#024d85]' : 'bg-slate-300 cursor-not-allowed'">
+            <template x-if="isSubmitting">
+                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+            </template>
+            <span x-text="isSubmitting ? 'Memproses...' : 'Verifikasi'"></span>
+        </button>
 
         <a href="{{ route('employee.dashboard') }}"
-           class="block w-full py-3.5 rounded-full text-sm font-semibold text-white/80 border border-white/20 hover:bg-white/10 active:scale-95 transition-all">
+           class="mt-4 text-sm font-semibold text-slate-500 hover:text-slate-700">
             Batal
         </a>
     </div>
@@ -124,9 +105,8 @@
             </div>
 
             <button @click="showSuccess = false; window.location='{{ route('employee.dashboard') }}'"
-                    class="w-full py-4 rounded-full font-bold text-white text-sm active:scale-95 transition-all"
-                    style="background: linear-gradient(135deg, #10B981, #059669);">
-                <i class="fa-solid fa-house mr-2"></i>OK, Kembali ke Home
+                    class="w-full py-4 rounded-full font-bold text-white text-sm active:scale-95 transition-all bg-[#035EA1] hover:bg-[#024d85]">
+                <i class="fa-solid fa-house mr-2"></i>OK, Kembali ke Beranda
             </button>
         </div>
     </div>
@@ -150,19 +130,18 @@
                 </div>
             </div>
 
-            <p class="text-xs font-bold tracking-widest text-red-400 uppercase mb-1">SORRY</p>
+            <p class="text-xs font-bold tracking-widest text-red-400 uppercase mb-1">MAAF</p>
             <h2 class="text-xl font-extrabold text-slate-800 mb-2">Presensi Gagal</h2>
-            <p class="text-sm text-slate-400 mb-6">QR Code tidak valid atau sudah kedaluwarsa.<br>Coba lagi dengan QR yang baru.</p>
+            <p class="text-sm text-slate-400 mb-6">OTP tidak valid atau sudah kedaluwarsa.<br>Coba lagi dengan kode yang baru.</p>
 
             <div class="space-y-3">
-                <button @click="showFail = false"
-                        class="w-full py-4 rounded-full font-bold text-white text-sm active:scale-95 transition-all"
-                        style="background: linear-gradient(135deg, #EF4444, #DC2626);">
-                    <i class="fa-solid fa-rotate-right mr-2"></i>Try Again
+                <button @click="showFail = false; resetOTP()"
+                        class="w-full py-4 rounded-full font-bold text-white text-sm active:scale-95 transition-all bg-red-500 hover:bg-red-600">
+                    <i class="fa-solid fa-rotate-right mr-2"></i>Coba Lagi
                 </button>
                 <a href="{{ route('employee.dashboard') }}"
                    class="block w-full py-3.5 rounded-full font-semibold text-slate-500 text-sm border border-slate-200 active:scale-95 transition-all">
-                    Kembali ke Home
+                    Kembali ke Beranda
                 </a>
             </div>
         </div>
@@ -174,22 +153,73 @@
 @push('scripts')
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('scannerComponent', () => ({
+    Alpine.data('otpComponent', () => ({
+        otp: ['', '', '', ''],
+        isSubmitting: false,
         showSuccess: false,
         showFail: false,
         scanMessage: '',
         scanTime: '',
         scanType: '',
         
-        async processScan(result) {
+        init() {
+            this.$nextTick(() => {
+                const el = document.getElementById('otp-0');
+                if (el) el.focus();
+            });
+        },
+        
+        handleInput(e, index) {
+            const value = e.target.value;
+            // Only allow numbers
+            if (!/^[0-9]$/.test(value)) {
+                this.otp[index] = '';
+                return;
+            }
+            
+            this.otp[index] = value;
+            
+            // Auto focus next
+            if (index < 3 && value) {
+                const nextEl = document.getElementById(`otp-${index + 1}`);
+                if (nextEl) nextEl.focus();
+            }
+            
+            // Auto submit
+            if (this.otp.join('').length === 4) {
+                this.submitOTP();
+            }
+        },
+        
+        handleBackspace(e, index) {
+            if (e.key === 'Backspace' && !this.otp[index] && index > 0) {
+                const prevEl = document.getElementById(`otp-${index - 1}`);
+                if (prevEl) prevEl.focus();
+            }
+        },
+        
+        resetOTP() {
+            this.otp = ['', '', '', ''];
+            this.$nextTick(() => {
+                const el = document.getElementById('otp-0');
+                if (el) el.focus();
+            });
+        },
+        
+        async submitOTP() {
+            if (this.isSubmitting) return;
+            
+            this.isSubmitting = true;
+            const code = this.otp.join('');
+            
             try {
-                const res = await fetch('{{ route("employee.scan.process") }}', {
+                const res = await fetch('{{ route("employee.verify-otp") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({ token: result })
+                    body: JSON.stringify({ otp: code })
                 });
                 
                 const data = await res.json();
@@ -205,31 +235,9 @@ document.addEventListener('alpine:init', () => {
             } catch (err) {
                 console.error(err);
                 this.showFail = true;
+            } finally {
+                this.isSubmitting = false;
             }
-        },
-        
-        startScanner() {
-            const readerElement = document.getElementById("reader");
-            if (!readerElement) {
-                console.error("Scanner element #reader not found in DOM");
-                return;
-            }
-
-            const html5QrCode = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-            
-            html5QrCode.start({ facingMode: "environment" }, config, (decodedText, decodedResult) => {
-                html5QrCode.stop().then(() => {
-                    this.processScan(decodedText);
-                }).catch(err => {
-                    console.error("Error stopping scanner:", err);
-                    this.processScan(decodedText);
-                });
-            }, (errorMessage) => {
-                // parse error, ignore it.
-            }).catch((err) => {
-                console.error("Camera access or init error:", err);
-            });
         }
     }));
 });

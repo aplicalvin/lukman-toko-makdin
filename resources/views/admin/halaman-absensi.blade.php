@@ -106,16 +106,16 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-slate-800">QR Code Absensi</p>
-                        <p class="text-xs text-slate-500">Scan untuk melakukan absensi</p>
+                        <p class="text-sm font-semibold text-slate-800">OTP Absensi</p>
+                        <p class="text-xs text-slate-500">Masukkan kode ini di aplikasi karyawan</p>
                     </div>
                 </div>
 
                 <div class="p-6 flex flex-col items-center">
-                    {{-- QR Code container --}}
+                    {{-- OTP container --}}
                     <div class="relative" id="qr-wrapper">
-                        <div class="w-64 h-64 rounded-2xl bg-white border-2 border-slate-200 shadow-inner flex items-center justify-center overflow-hidden p-3" id="qr-container">
-                            {{-- QR image loaded by JS --}}
+                        <div class="w-64 h-64 rounded-2xl bg-white border-2 border-slate-200 shadow-inner flex items-center justify-center overflow-hidden p-3">
+                            <span id="otp-text" class="text-6xl font-bold text-indigo-600 tracking-widest">----</span>
                         </div>
                         {{-- Refresh overlay --}}
                         <div id="qr-overlay" class="hidden absolute inset-0 rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center">
@@ -290,32 +290,14 @@
         renderTable(this.value);
     });
 
-    // ── QR Code generator ────────────────────────────────────────────────
-    const ABSENSI_URL = document.getElementById('absensi-url').textContent.trim();
+    // ── OTP generator ────────────────────────────────────────────────
     const REFRESH_SEC = 30;
 
-    let qrCodeInstance = null;
-
-    function generateQr() {
-        const container = document.getElementById('qr-container');
-        
+    function generateOtp() {
         fetch('{{ route("admin.generate-token") }}')
             .then(r => r.json())
             .then(data => {
-                if (!qrCodeInstance) {
-                    container.innerHTML = '';
-                    qrCodeInstance = new QRCode(container, {
-                        text: data.token,
-                        width: 230,
-                        height: 230,
-                        colorDark : "#1e293b",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-                } else {
-                    qrCodeInstance.clear();
-                    qrCodeInstance.makeCode(data.token);
-                }
+                document.getElementById('otp-text').textContent = data.token;
             })
             .catch(e => console.error('Error generating token:', e));
     }
@@ -325,7 +307,7 @@
         overlay.classList.remove('hidden');
         overlay.classList.add('flex');
         setTimeout(() => {
-            generateQr();
+            generateOtp();
             loadData(); // also refresh data when QR refreshes
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
@@ -360,8 +342,8 @@
         }
     }
 
-    // Initial QR load
-    generateQr();
+    // Initial OTP load
+    generateOtp();
     timerInterval = setInterval(tickTimer, 1000);
 
     // ── Copy URL ─────────────────────────────────────────────────────────

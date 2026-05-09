@@ -16,10 +16,8 @@ class AttendanceActionController extends Controller
         return view('employee.scan');
     }
 
-    public function processScan(Request $request)
+    public function verifyOtp(Request $request)
     {
-        // Simple scan simulation handler
-        // In reality, it should validate a token from the QR code.
         $user = Auth::user();
         $employee = $user->employee;
         $today = Carbon::today();
@@ -29,20 +27,20 @@ class AttendanceActionController extends Controller
             return response()->json(['success' => false, 'message' => 'Employee data not found'], 404);
         }
 
-        $token = $request->token;
+        $otp = $request->otp;
 
-        if (!$token) {
-            return response()->json(['success' => false, 'message' => 'Token is required'], 400);
+        if (!$otp) {
+            return response()->json(['success' => false, 'message' => 'OTP is required'], 400);
         }
 
-        $qrToken = \App\Models\QrToken::where('token', $token)->first();
+        $qrToken = \App\Models\QrToken::where('token', $otp)->first();
 
         if (!$qrToken) {
-            return response()->json(['success' => false, 'message' => 'QR code is invalid'], 400);
+            return response()->json(['success' => false, 'message' => 'OTP is invalid'], 400);
         }
 
         if ($qrToken->expires_at->isPast()) {
-            return response()->json(['success' => false, 'message' => 'QR code has expired'], 400);
+            return response()->json(['success' => false, 'message' => 'OTP has expired'], 400);
         }
 
         try {
@@ -53,7 +51,7 @@ class AttendanceActionController extends Controller
                 'employee_id' => $employee->id,
                 'timestamp' => $now,
                 'type' => 'in', // simplify
-                'qr_token' => $request->token ?? null,
+                'qr_token' => $otp,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
