@@ -18,7 +18,7 @@
     <div class="m-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
         <i class="fa-solid fa-circle-exclamation text-red-500 mt-0.5"></i>
         <p class="text-sm text-red-700">
-            Please note: You haven't clocked out for the previous day. Please complete it as soon as possible so that your honorarium payment can proceed smoothly. Thank you.
+            Perhatian: Anda belum absen pulang untuk hari sebelumnya. Segera lengkapi agar pembayaran honorarium Anda dapat diproses dengan lancar. Terima kasih.
         </p>
     </div>
     @endif
@@ -28,12 +28,12 @@
         <h4 class="text-sm font-medium text-slate-500">
             @php
                 $h = (int)\Carbon\Carbon::now()->format('H');
-                echo $h < 12 ? 'Good Morning' : ($h < 17 ? 'Good Afternoon' : 'Good Evening');
+                echo $h < 12 ? 'Selamat Pagi' : ($h < 17 ? 'Selamat Siang' : 'Selamat Malam');
             @endphp
         </h4>
         <br />
         <h2 class="text-2xl font-bold text-[#035EA1]">
-            {{ auth()->user()->name ?? 'Full Name' }}
+            {{ auth()->user()->name ?? 'Nama Karyawan' }}
         </h2>
     </div>
 
@@ -58,28 +58,28 @@
 
     {{-- 2. Section: Today's Attendance --}}
     <div class="mx-4 mb-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-        <h3 class="text-base font-bold text-slate-800 mb-4">Today's Attendance</h3>
+        <h3 class="text-base font-bold text-slate-800 mb-4">Presensi Hari Ini</h3>
 
         <div class="flex flex-col items-center justify-center py-4">
             {{-- Real-time time --}}
             <div class="text-4xl font-extrabold text-[#035EA1]" x-text="time">00:00:00</div>
             {{-- Day, Date --}}
-            <div class="text-sm text-slate-500 mt-1" x-text="date">Loading...</div>
+            <div class="text-sm text-slate-500 mt-1" x-text="date">Memuat...</div>
         </div>
 
         {{-- Attendance Button --}}
         <div class="mt-4">
             <a href="{{ route('employee.scan') }}" class="w-full flex items-center justify-center gap-2 py-3 bg-[#035EA1] text-white rounded-xl font-semibold hover:bg-[#024D82] transition-colors shadow-sm shadow-[#035EA1]/20">
                 <i class="fa-solid fa-qrcode"></i>
-                Scan Attendance
+                Scan Presensi
             </a>
         </div>
 
         {{-- Total work hours --}}
         <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-            <span class="text-sm text-slate-500">Total Work Hours</span>
+            <span class="text-sm text-slate-500">Total Jam Kerja</span>
             <span class="text-sm font-bold {{ $workedH < 9 ? 'text-red-500' : 'text-emerald-500' }}">
-                {{ $workedH }} / 9 Hours
+                {{ $workedH }} / 9 Jam
             </span>
         </div>
     </div>
@@ -87,8 +87,8 @@
     {{-- 3. Today's History --}}
     <div class="mx-4 mb-4 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-bold text-slate-800">Today's History</h3>
-            <a href="{{ route('employee.rekap') }}" class="text-xs text-[#035EA1] font-semibold">View All</a>
+            <h3 class="text-base font-bold text-slate-800">Riwayat Hari Ini</h3>
+            <a href="{{ route('employee.rekap') }}" class="text-xs text-[#035EA1] font-semibold">Lihat Semua</a>
         </div>
 
         <div class="space-y-3">
@@ -99,8 +99,8 @@
                             <i class="fa-solid fa-right-to-bracket"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-semibold">Clock In</p>
-                            <p class="text-xs text-slate-400">Today</p>
+                            <p class="text-sm font-semibold">Jam Masuk</p>
+                            <p class="text-xs text-slate-400">Hari Ini</p>
                         </div>
                     </div>
                     <p class="text-sm font-bold text-slate-700">
@@ -115,8 +115,8 @@
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-semibold">Clock Out</p>
-                            <p class="text-xs text-slate-400">Today</p>
+                            <p class="text-sm font-semibold">Jam Pulang</p>
+                            <p class="text-xs text-slate-400">Hari Ini</p>
                         </div>
                     </div>
                     <p class="text-sm font-bold text-slate-700">
@@ -125,25 +125,25 @@
                 </div>
                 @endif
             @else
-                <div class="text-center text-sm text-slate-400 py-4">No attendance record for today.</div>
+                <div class="text-center text-sm text-slate-400 py-4">Belum ada data presensi hari ini.</div>
             @endif
         </div>
     </div>
 
     {{-- 4. Section: "Today's Salary" --}}
     <div class="mx-4 mb-20 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-        <h3 class="text-base font-bold text-slate-800 mb-4">Today's Salary</h3>
+        <h3 class="text-base font-bold text-slate-800 mb-4">Gaji Hari Ini</h3>
 
         <div class="space-y-3">
             <div class="flex justify-between items-center">
-                <span class="text-sm text-slate-500">Total Work Hours</span>
+                <span class="text-sm text-slate-500">Total Jam Kerja</span>
                 <span class="text-sm font-bold {{ $workedH < 9 ? 'text-red-500' : 'text-emerald-500' }}">
-                    {{ $workedH }} Hours
+                    {{ $workedH }} Jam
                 </span>
             </div>
 
             <div class="flex justify-between items-center">
-                <span class="text-sm text-slate-500">Total Wage</span>
+                <span class="text-sm text-slate-500">Total Upah</span>
                 <span class="text-sm font-bold text-[#035EA1]">
                     {{ $todaySalary ? 'Rp ' . number_format($todaySalary->salary_amount, 0, ',', '.') : 'Rp 0' }}
                 </span>
@@ -152,13 +152,13 @@
             <div class="flex justify-between items-center">
                 <span class="text-sm text-slate-500">Status</span>
                 <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $todaySalary ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">
-                    {{ $todaySalary ? 'Paid' : 'Pending' }}
+                    {{ $todaySalary ? 'Dibayar' : 'Menunggu' }}
                 </span>
             </div>
         </div>
 
         <p class="text-xs text-slate-400 mt-4 text-center italic">
-            "Wage is calculated automatically after clocking out"
+            "Upah dihitung otomatis setelah absen pulang"
         </p>
     </div>
 

@@ -67,27 +67,25 @@ class AttendanceActionController extends Controller
             if (!$attendance->exists || !$attendance->check_in_time) {
                 // Clocking in
                 $attendance->check_in_time = $now->format('H:i:s');
-                
-                // Check late status
-                $shiftStart = Carbon::createFromTime(7, 0, 0); // 07:00
-                $gracePeriod = 15; // 15 mins
-                if ($now->greaterThan($shiftStart->copy()->addMinutes($gracePeriod))) {
-                    $attendance->status = 'Terlambat';
-                } else {
-                    $attendance->status = 'Hadir';
-                }
-                
+                $attendance->status = 'Hadir';
                 $attendance->save();
                 $message = 'Clock In berhasil';
             } else {
                 // Clocking out
                 $attendance->check_out_time = $now->format('H:i:s');
-                
+
                 // Calculate total hours
                 $checkIn = Carbon::parse($attendance->check_in_time);
                 $diffInMinutes = $now->diffInMinutes($checkIn);
                 $attendance->total_hours = round($diffInMinutes / 60, 2);
-                
+
+                // Set status based on 9 hours requirement
+                if ($attendance->total_hours < 9) {
+                    $attendance->status = 'Pulang Cepat';
+                } else {
+                    $attendance->status = 'Hadir';
+                }
+
                 $attendance->save();
 
                 // Automatically fill daily salary with 50,000

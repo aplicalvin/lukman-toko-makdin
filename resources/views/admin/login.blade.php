@@ -49,7 +49,7 @@
                     <div class="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center mb-5 shadow-lg">
                         <i class="fa-solid fa-fingerprint text-white text-3xl"></i>
                     </div>
-                    <h1 class="text-white text-3xl font-extrabold tracking-tight mb-1">MAKDIN</h1>
+                    <h1 class="text-white text-3xl font-extrabold tracking-tight mb-1">MasDin</h1>
                     <p class="text-blue-200 text-sm font-medium">Sistem Manajemen Kehadiran</p>
                 </div>
 
@@ -91,7 +91,7 @@
                         <i class="fa-solid fa-fingerprint text-white text-xl"></i>
                     </div>
                     <div>
-                        <p class="text-[#1E2A5E] font-extrabold text-lg leading-tight">MAKDIN</p>
+                        <p class="text-[#1E2A5E] font-extrabold text-lg leading-tight">MasDin</p>
                         <p class="text-slate-400 text-xs">Admin Panel</p>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                                 <i class="fa-regular fa-envelope text-base"></i>
                             </span>
                             <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                                   placeholder="admin@makdin.co.id"
+                                   placeholder="admin@MasDin.co.id"
                                    class="w-full pl-11 pr-4 py-3.5 rounded-xl border text-sm text-slate-800 bg-slate-50 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1E2A5E]/25 focus:border-[#1E2A5E] focus:bg-white transition-all
                                           @error('email') border-red-400 bg-red-50 @else border-slate-200 @enderror"/>
                         </div>

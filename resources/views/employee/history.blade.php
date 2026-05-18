@@ -63,7 +63,6 @@
             statusBadge(status) {
                 const map = {
                     'Hadir':        { bg:'bg-emerald-100', text:'text-emerald-700', icon:'fa-circle-check' },
-                    'Terlambat':    { bg:'bg-amber-100',   text:'text-amber-700',   icon:'fa-triangle-exclamation' },
                     'Pulang Cepat': { bg:'bg-orange-100',  text:'text-orange-700',  icon:'fa-circle-exclamation' },
                     'Alpa':         { bg:'bg-red-100',     text:'text-red-700',     icon:'fa-circle-xmark' },
                     'Libur':        { bg:'bg-slate-100',   text:'text-slate-500',   icon:'fa-umbrella-beach' },
@@ -113,8 +112,8 @@
                 <p class="text-blue-200 text-[10px] font-semibold">Hadir</p>
             </div>
             <div class="flex-shrink-0 bg-white/15 border border-white/20 rounded-xl px-3 py-2 text-center min-w-[80px]">
-                <p class="text-amber-300 text-lg font-extrabold">{{ $histories->where('status', 'Terlambat')->count() }}</p>
-                <p class="text-blue-200 text-[10px] font-semibold">Terlambat</p>
+                <p class="text-orange-300 text-lg font-extrabold">{{ $histories->where('status', 'Pulang Cepat')->count() }}</p>
+                <p class="text-blue-200 text-[10px] font-semibold">Pulang Cepat</p>
             </div>
             <div class="flex-shrink-0 bg-white/15 border border-white/20 rounded-xl px-3 py-2 text-center min-w-[80px]">
                 <p class="text-red-300 text-lg font-extrabold">{{ $histories->where('status', 'Tidak Hadir')->count() }}</p>
@@ -146,7 +145,7 @@
         <div x-show="tab === 'absensi'">
             <p class="text-xs text-slate-400 font-medium mb-2">Status Absensi</p>
             <div class="flex flex-wrap gap-2">
-                <template x-for="opt in [['all','Semua'],['hadir','Hadir'],['terlambat','Terlambat'],['pulang cepat','Pulang Cepat'],['alpa','Alpa']]" :key="opt[0]">
+                <template x-for="opt in [['all','Semua'],['hadir','Hadir'],['pulang cepat','Pulang Cepat'],['alpa','Alpa']]" :key="opt[0]">
                     <button @click="filterType = opt[0]"
                             :class="filterType === opt[0] ? 'bg-[#1E2A5E] text-white' : 'bg-slate-100 text-slate-600'"
                             class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
@@ -268,14 +267,7 @@
                     </div>
                 </div>
 
-                <template x-if="row.lateMin > 0">
-                    <div class="mx-4 mb-3 mt-1 flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-xl">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-xs"></i>
-                        <p class="text-xs text-amber-700 font-medium">
-                            Terlambat <span class="font-bold" x-text="row.lateMin + ' menit'"></span>
-                        </p>
-                    </div>
-                </template>
+
             </div>
         </template>
 

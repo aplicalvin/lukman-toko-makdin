@@ -7,7 +7,7 @@
         <a href="{{ route('employee.dashboard') }}"
            class="flex flex-col items-center justify-center gap-0.5 transition-colors {{ ($active ?? '') === 'home' ? 'text-[#1E2A5E]' : 'text-slate-400' }}">
             <i class="fa-solid fa-house text-xl"></i>
-            <span class="text-[10px] font-semibold">Home</span>
+            <span class="text-[10px] font-semibold">Beranda</span>
             @if(($active ?? '') === 'home')
                 <div class="absolute bottom-0 h-0.5 w-10 rounded-full bg-[#1E2A5E]" style="margin-bottom: max(0px, env(safe-area-inset-bottom));"></div>
             @endif
