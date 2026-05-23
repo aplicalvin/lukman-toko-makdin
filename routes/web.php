@@ -103,6 +103,10 @@ Route::prefix('employee')->name('employee.')->middleware(['auth', 'role:employee
     Route::get('/history', [AttendanceActionController::class, 'history'])->name('history');
     Route::get('/rekap', fn() => redirect()->route('employee.history'))->name('rekap'); // redirect rekap to history
     
+    // Presensi Bermasalah
+    Route::get('/presensi-bermasalah', [AttendanceActionController::class, 'problematicIndex'])->name('presensi-bermasalah');
+    Route::post('/presensi-bermasalah', [AttendanceActionController::class, 'problematicStore'])->name('presensi-bermasalah.store');
+    
     // Permits / Leave
     Route::get('/izin', [PermitController::class, 'index'])->name('izin');
     Route::post('/izin', [PermitController::class, 'store'])->name('izin.store');

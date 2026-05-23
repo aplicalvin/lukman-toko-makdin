@@ -59,9 +59,8 @@ class AttendanceController extends Controller
      */
     public function problematicData(Request $request)
     {
-        // Define problematic as: check_out_time is null AND approval_status is Pending AND status is not Izin/Sakit/Cuti
+        // Define problematic as: approval_status is Pending AND status is not Izin/Sakit/Cuti
         $query = DailyAttendance::with('employee')
-            ->whereNull('check_out_time')
             ->where('approval_status', 'Pending')
             ->whereNotIn('status', ['Izin', 'Sakit', 'Cuti']);
 
@@ -81,6 +80,7 @@ class AttendanceController extends Controller
             ->addColumn('nama', fn($row) => $row->employee->name ?? '-')
             ->addColumn('bagian', fn($row) => $row->employee->section ?? '-')
             ->addColumn('masuk', fn($row) => $row->check_in_time ? \Carbon\Carbon::parse($row->check_in_time)->format('H:i') : '-')
+            ->addColumn('pulang', fn($row) => $row->check_out_time ? \Carbon\Carbon::parse($row->check_out_time)->format('H:i') : '')
             ->addColumn('ket', fn($row) => $row->notes ?: 'Lupa absen pulang')
             ->addColumn('status', fn($row) => $row->approval_status)
             ->addColumn('aksi', function ($row) {

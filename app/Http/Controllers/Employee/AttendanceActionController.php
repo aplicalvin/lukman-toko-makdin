@@ -133,4 +133,65 @@ class AttendanceActionController extends Controller
 
         return view('employee.history', compact('histories'));
     }
+    public function problematicIndex()
+    {
+        $employee = Auth::user()->employee;
+        if (!$employee) abort(403, 'Profil tidak ditemukan.');
+
+        $yesterday = Carbon::yesterday();
+        $attendance = DailyAttendance::where('employee_id', $employee->id)
+            ->whereDate('date', $yesterday)
+            ->whereNotNull('check_in_time')
+            ->whereNull('check_out_time')
+            ->first();
+
+        if (!$attendance) {
+            return redirect()->route('employee.dashboard')->with('success', 'Tidak ada presensi bermasalah.');
+        }
+
+        return view('employee.presensi-bermasalah', compact('attendance'));
+    }
+
+    public function problematicStore(Request $request)
+    {
+        $request->validate([
+            'attendance_id' => 'required|exists:daily_attendance,id',
+            'check_out_time' => 'required',
+            'notes' => 'required|string|max:255'
+        ]);
+
+        $employee = Auth::user()->employee;
+        $attendance = DailyAttendance::where('id', $request->attendance_id)
+            ->where('employee_id', $employee->id)
+            ->firstOrFail();
+
+        $checkIn = Carbon::parse($attendance->check_in_time);
+        $checkOut = Carbon::parse($request->check_out_time);
+        
+        $diffInMinutes = $checkOut->diffInMinutes($checkIn);
+        $totalHours = round($diffInMinutes / 60, 2);
+
+        $attendance->update([
+            'check_out_time' => $request->check_out_time,
+            'total_hours' => $totalHours,
+            'status' => 'Hadir',
+            'approval_status' => 'Pending',
+            'notes' => $request->notes,
+        ]);
+
+        // Automatically fill daily salary with 50,000
+        \App\Models\DailySalary::updateOrCreate(
+            [
+                'employee_id' => $employee->id,
+                'date' => $attendance->date,
+            ],
+            [
+                'total_hours' => $totalHours,
+                'salary_amount' => 50000,
+                'notes' => 'Otomatis dari sistem (Selesai Manual)',
+            ]
+        );
+
+        return redirect()->route('employee.dashboard')->with('success', 'Presensi berhasil diselesaikan. Menunggu persetujuan admin.');
+    }
 }

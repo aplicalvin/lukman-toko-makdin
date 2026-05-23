@@ -132,8 +132,8 @@
         document.getElementById('modal-id').value = row.id;
         document.getElementById('modal-ket').textContent = row.ket;
         document.getElementById('modal-jam-masuk').textContent = row.masuk;
-        document.getElementById('pb-jam-pulang').value = '';
-        document.getElementById('pb-notes').value = '';
+        document.getElementById('pb-jam-pulang').value = row.pulang || '';
+        document.getElementById('pb-notes').value = (row.ket && row.ket !== 'Lupa absen pulang') ? row.ket : '';
         overlay('open','#modal-approval');
     };
     
