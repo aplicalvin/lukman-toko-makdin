@@ -59,6 +59,7 @@
         }
 
         $workedH = round($workedMins / 60, 1);
+        $workedFormatted = formatWorkingHoursFromMinutes($workedMins);
     @endphp
 
     {{-- 2. Section: Today's Attendance --}}
@@ -84,7 +85,7 @@
         <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
             <span class="text-sm text-slate-500">Total Jam Kerja</span>
             <span class="text-sm font-bold {{ $workedH < 9 ? 'text-red-500' : 'text-emerald-500' }}">
-                {{ $workedH }} / 9 Jam
+                {{ $workedFormatted }} / 9 jam
             </span>
         </div>
     </div>
@@ -143,7 +144,7 @@
             <div class="flex justify-between items-center">
                 <span class="text-sm text-slate-500">Total Jam Kerja</span>
                 <span class="text-sm font-bold {{ $workedH < 9 ? 'text-red-500' : 'text-emerald-500' }}">
-                    {{ $workedH }} Jam
+                    {{ $workedFormatted }}
                 </span>
             </div>
 

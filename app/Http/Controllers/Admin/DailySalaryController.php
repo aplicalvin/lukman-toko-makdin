@@ -32,7 +32,7 @@ class DailySalaryController extends Controller
                 ->addColumn('id_karyawan', fn($row) => $row->employee->noreg)
                 ->addColumn('nama', fn($row) => $row->employee->name)
                 ->addColumn('bagian', fn($row) => $row->employee->section)
-                ->addColumn('waktu', fn($row) => $row->total_hours . 'j')
+                ->addColumn('waktu', fn($row) => formatWorkingHours($row->total_hours))
                 ->addColumn('gaji', function ($row) use ($date) {
                     $salary = $row->employee->dailySalaries->first();
                     return $salary ? $salary->salary_amount : 0;

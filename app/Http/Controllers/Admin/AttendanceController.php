@@ -42,7 +42,7 @@ class AttendanceController extends Controller
             ->editColumn('date', fn($row) => $row->date->format('Y-m-d'))
             ->addColumn('masuk', fn($row) => $row->check_in_time ? \Carbon\Carbon::parse($row->check_in_time)->format('H:i') : '-')
             ->addColumn('pulang', fn($row) => $row->check_out_time ? \Carbon\Carbon::parse($row->check_out_time)->format('H:i') : '-')
-            ->editColumn('total_hours', fn($row) => $row->total_hours . 'j')
+            ->editColumn('total_hours', fn($row) => formatWorkingHours($row->total_hours))
             ->make(true);
     }
 

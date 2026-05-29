@@ -11,7 +11,7 @@
             'day' => \Carbon\Carbon::parse($h->date)->translatedFormat('l'),
             'clockIn' => $h->check_in_time ? \Carbon\Carbon::parse($h->check_in_time)->format('H:i') : null,
             'clockOut' => $h->check_out_time ? \Carbon\Carbon::parse($h->check_out_time)->format('H:i') : null,
-            'duration' => $h->total_hours ? $h->total_hours . 'j' : '-',
+            'duration' => $h->total_hours ? formatWorkingHours($h->total_hours) : '-',
             'status' => $h->status ?? 'Alpa',
             'lateMin' => 0
         ];
