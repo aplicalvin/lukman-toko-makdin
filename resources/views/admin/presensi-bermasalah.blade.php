@@ -11,7 +11,7 @@
             <p class="text-sm text-slate-500">Daftar presensi yang memerlukan tinjauan atau persetujuan.</p>
         </div>
         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> 3 Pending
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> {{ $pendingCount }} Pending
         </span>
     </div>
 

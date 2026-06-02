@@ -51,7 +51,18 @@ class AttendanceController extends Controller
      */
     public function problematicIndex()
     {
-        return view('admin.presensi-bermasalah');
+        $today = \Carbon\Carbon::today()->format('Y-m-d');
+        $pendingCount = DailyAttendance::whereNotIn('status', ['Izin', 'Sakit', 'Cuti'])
+            ->where(function($q) use ($today) {
+                $q->where('approval_status', 'Pending')
+                  ->orWhere(function($subQ) use ($today) {
+                      $subQ->whereNotNull('check_in_time')
+                           ->whereNull('check_out_time')
+                           ->where('date', '<', $today);
+                  });
+            })->count();
+
+        return view('admin.presensi-bermasalah', compact('pendingCount'));
     }
 
     /**
@@ -59,10 +70,18 @@ class AttendanceController extends Controller
      */
     public function problematicData(Request $request)
     {
-        // Define problematic as: approval_status is Pending AND status is not Izin/Sakit/Cuti
+        $today = \Carbon\Carbon::today()->format('Y-m-d');
+        
         $query = DailyAttendance::with('employee')
-            ->where('approval_status', 'Pending')
-            ->whereNotIn('status', ['Izin', 'Sakit', 'Cuti']);
+            ->whereNotIn('status', ['Izin', 'Sakit', 'Cuti'])
+            ->where(function($q) use ($today) {
+                $q->where('approval_status', 'Pending')
+                  ->orWhere(function($subQ) use ($today) {
+                      $subQ->whereNotNull('check_in_time')
+                           ->whereNull('check_out_time')
+                           ->where('date', '<', $today);
+                  });
+            });
 
         if ($request->filled('date')) {
             $query->whereDate('date', $request->date);

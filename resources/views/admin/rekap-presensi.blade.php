@@ -58,11 +58,10 @@
 
 @push('scripts')
 <script>
-    // Default to today
-    document.getElementById('filter-tanggal').value = new Date().toISOString().split('T')[0];
+(function(){
+    // Don't default to today — show all dates so the table isn't empty
 
     const table = $('#table-rekap-presensi').DataTable({
-        processing: true,
         serverSide: true,
         ajax: {
             url: '{{ route("admin.rekap-presensi.data") }}',
@@ -96,7 +95,7 @@
         table.draw();
     };
     document.getElementById('btn-reset').onclick = () => {
-        document.getElementById('filter-tanggal').value = new Date().toISOString().split('T')[0];
+        document.getElementById('filter-tanggal').value = '';
         document.getElementById('filter-nama').value = '';
         table.search('').columns().search('').draw();
     };

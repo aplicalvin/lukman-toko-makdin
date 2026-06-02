@@ -68,6 +68,7 @@ class AttendanceActionController extends Controller
                 // Clocking in
                 $attendance->check_in_time = $now->format('H:i:s');
                 $attendance->status = 'Hadir';
+                $attendance->approval_status = 'Done'; // Normal clock-in doesn't need approval
                 $attendance->save();
                 $message = 'Clock In berhasil';
             } else {
@@ -95,6 +96,7 @@ class AttendanceActionController extends Controller
                     $attendance->status = 'Hadir';
                 }
 
+                $attendance->approval_status = 'Done'; // Normal clock-out doesn't need approval
                 $attendance->save();
 
                 // Issue 3 Fix: Only auto-set salary to 50,000 if hours >= 9

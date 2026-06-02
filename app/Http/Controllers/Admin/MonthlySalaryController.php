@@ -17,20 +17,28 @@ class MonthlySalaryController extends Controller
             $year = $request->get('year', now()->year);
             $month = $request->get('month', now()->month);
 
-            $query = DailySalary::with('employee')
-                ->select('employee_id', 
+            // Use a subquery approach that's compatible with Yajra DataTables + groupBy.
+            // We build the aggregated result as a collection so DataTables doesn't
+            // interfere with the GROUP BY count query.
+            $results = DailySalary::query()
+                ->select(
+                    'employee_id',
                     DB::raw('COUNT(*) as total_days'),
                     DB::raw('SUM(total_hours) as total_hours'),
                     DB::raw('SUM(salary_amount) as total_salary')
                 )
                 ->whereYear('date', $year)
                 ->whereMonth('date', $month)
-                ->groupBy('employee_id');
+                ->groupBy('employee_id')
+                ->get();
 
-            return DataTables::of($query)
+            // Eager-load the employee relationship on the collection
+            $results->load('employee');
+
+            return DataTables::of($results)
                 ->addIndexColumn()
-                ->addColumn('nama', fn($row) => $row->employee->name)
-                ->addColumn('bagian', fn($row) => $row->employee->section)
+                ->addColumn('nama', fn($row) => $row->employee->name ?? '-')
+                ->addColumn('bagian', fn($row) => $row->employee->section ?? '-')
                 ->editColumn('total_hours', fn($row) => formatWorkingHours($row->total_hours))
                 ->editColumn('total_salary', fn($row) => 'Rp ' . number_format($row->total_salary, 0, ',', '.'))
                 ->make(true);

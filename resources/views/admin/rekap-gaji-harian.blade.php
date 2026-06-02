@@ -100,7 +100,7 @@
         return map[status] || '<span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">-</span>';
     };
 
-    document.getElementById('gh-tgl').value = new Date().toISOString().split('T')[0];
+    // Don't default to today — show all dates so the table isn't empty
 
     const table = $('#tbl-gh').DataTable({
         processing: true,
@@ -240,7 +240,7 @@
 
     document.getElementById('gh-filter').onclick=()=>table.draw();
     document.getElementById('gh-reset').onclick=()=>{
-        document.getElementById('gh-tgl').value = new Date().toISOString().split('T')[0];
+        document.getElementById('gh-tgl').value = '';
         document.getElementById('gh-bagian').value='';
         table.draw();
     };
