@@ -51,16 +51,8 @@ class AttendanceController extends Controller
      */
     public function problematicIndex()
     {
-        $today = \Carbon\Carbon::today()->format('Y-m-d');
-        $pendingCount = DailyAttendance::whereNotIn('status', ['Izin', 'Sakit', 'Cuti'])
-            ->where(function($q) use ($today) {
-                $q->where('approval_status', 'Pending')
-                  ->orWhere(function($subQ) use ($today) {
-                      $subQ->whereNotNull('check_in_time')
-                           ->whereNull('check_out_time')
-                           ->where('date', '<', $today);
-                  });
-            })->count();
+        // Use shared scope — same query as dashboard and DataTable
+        $pendingCount = DailyAttendance::problematic()->count();
 
         return view('admin.presensi-bermasalah', compact('pendingCount'));
     }
@@ -70,18 +62,8 @@ class AttendanceController extends Controller
      */
     public function problematicData(Request $request)
     {
-        $today = \Carbon\Carbon::today()->format('Y-m-d');
-        
-        $query = DailyAttendance::with('employee')
-            ->whereNotIn('status', ['Izin', 'Sakit', 'Cuti'])
-            ->where(function($q) use ($today) {
-                $q->where('approval_status', 'Pending')
-                  ->orWhere(function($subQ) use ($today) {
-                      $subQ->whereNotNull('check_in_time')
-                           ->whereNull('check_out_time')
-                           ->where('date', '<', $today);
-                  });
-            });
+        // Use shared scope — same query as dashboard and problematicIndex
+        $query = DailyAttendance::with('employee')->problematic();
 
         if ($request->filled('date')) {
             $query->whereDate('date', $request->date);

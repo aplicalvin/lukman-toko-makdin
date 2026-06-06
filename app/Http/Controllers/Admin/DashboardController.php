@@ -23,20 +23,11 @@ class DashboardController extends Controller
         
         // Attendance stats
         $presentToday = DailyAttendance::whereDate('date', $today)->where('status', 'Hadir')->count();
-        $attendancePercentage = $totalEmployees > 0 ? round(($presentToday / $totalEmployees) * 100, 1) : 0;
         
-        $problematicCount = DailyAttendance::whereDate('date', $today)
-            ->where(function($q) {
-                $q->where('status', '!=', 'Hadir')
-                  ->orWhereNotNull('notes')
-                  ->orWhere('approval_status', 'Pending');
-            })->count();
+        // Use shared scope so dashboard count matches the Presensi Bermasalah page exactly
+        $problematicCount = DailyAttendance::problematic()->count();
 
         $absentToday = DailyAttendance::whereDate('date', $today)->where('status', 'Tidak Hadir')->count();
-
-        // Work days this month (simple logic, assuming 22 working days minus holidays)
-        // Can be refined later based on actual work calendar.
-        $workDaysThisMonth = 22;
 
         // Total salary this month
         $currentMonth = $today->month;
@@ -49,10 +40,8 @@ class DashboardController extends Controller
             'totalEmployees',
             'totalAdmins',
             'presentToday',
-            'attendancePercentage',
             'problematicCount',
             'absentToday',
-            'workDaysThisMonth',
             'totalSalaryThisMonth'
         ));
     }
